@@ -1,0 +1,18 @@
+# Note locali, non pubbliche
+_notes/
+
+# Ambienti Python
+.venv/
+__pycache__/
+*.pyc
+
+# Ambienti Node
+node_modules/
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Claude Code locale
+.claude/settings.local.json
