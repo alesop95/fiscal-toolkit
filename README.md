@@ -1,34 +1,42 @@
 # fiscal-toolkit
 
-Strumento personale per l'analisi degli aspetti fiscali della retribuzione in Italia, nel
-contesto della ricerca di lavoro: stima del netto da una RAL, confronto lavoro dipendente vs
-partita IVA (forfettario/ordinario), lettura del cuneo fiscale e delle detrazioni IRPEF.
+fiscal-toolkit e' uno strumento personale, non commerciale, pensato per orientarsi tra gli aspetti
+fiscali della retribuzione in Italia durante una ricerca di lavoro: stimare il netto a partire da
+una RAL, confrontare il lavoro dipendente con la partita IVA (regime forfettario o ordinario), e
+capire il peso del cuneo fiscale e delle detrazioni IRPEF su uno stipendio. E' nato il 10 luglio
+2026 da una sessione di ricerca condotta nel repository del CV (`my-cv`), ed e' stato spostato qui
+come progetto a se stante, seguendo lo stesso pattern gia' adottato per altri repository personali
+collegati (`legal-consultant`, `skills`, `projects`). Non e' e non vuole essere consulenza
+fiscale: qualunque calcolo prodotto andra' sempre verificato con un commercialista prima di essere
+usato per una decisione reale.
 
-Non e' un progetto commerciale e non costituisce consulenza fiscale: i calcoli vanno sempre
-verificati con un commercialista prima di qualunque decisione reale.
+## Stato attuale
 
-## Stato
+A oggi il repository contiene solo lo scaffolding iniziale, cioe' README e istruzioni di
+progetto: non c'e' ancora nessuna implementazione, ne' script di calcolo, ne' formule codificate.
+E' un progetto in fase di pianificazione, non uno strumento funzionante.
 
-Scaffolding iniziale, nessuna implementazione ancora. Nato da una sessione di ricerca il
-2026-07-10 nel repository `my-cv`, spostato qui come progetto a se stante seguendo lo stesso
-pattern di `legal-consultant`, `skills` e `projects`.
+## Punto di partenza individuato
 
-## Punto di partenza
-
-Per il lato lavoro dipendente: [stipendio.top](https://github.com/BernardoGiordano/stipendio.top)
-(GPL-3.0) e' il riferimento open-source piu' aggiornato trovato nella ricerca, con le formule
-IRPEF/INPS 2025-2026 documentate. Per il lato partita IVA (forfettario/ordinario) non esiste un
-equivalente open-source affidabile: le formule vanno derivate a mano e verificate contro
-calcolatori proprietari (calcolopiva.it, fiscozen.it, tasseforfettario.it) usati solo come
-riscontro, non come fonte di codice.
-
-Non esiste un'API pubblica pronta all'uso per aliquote/scaglioni IRPEF o contributi INPS
-correnti: i parametri normativi vanno aggiornati manualmente ad ogni Legge di Bilancio.
+Per il lato lavoro dipendente, la ricerca ha individuato in stipendio.top (licenza GPL-3.0) il
+riferimento open source piu' aggiornato trovato finora, con le formule IRPEF e INPS 2025-2026 gia'
+documentate nel suo codice. Per il lato partita IVA (regime forfettario e regime ordinario) non
+esiste invece un equivalente open source ritenuto affidabile: le formule andranno derivate a mano
+e verificate contro calcolatori proprietari (calcolopiva.it, fiscozen.it, tasseforfettario.it),
+usati solo come riscontro esterno e mai come fonte da cui copiare codice. Va inoltre tenuto
+presente che non esiste un'API pubblica pronta all'uso per aliquote, scaglioni IRPEF o contributi
+INPS correnti: i parametri normativi andranno aggiornati a mano a ogni Legge di Bilancio.
 
 ## Relazione con altri progetti
 
-`E:\legal-consultant` indicizza l'intera legislazione italiana (corpus `italia-corpus`, ricerca
-full-text via MCP server) ed e' la fonte candidata per verificare il testo normativo aggiornato
-(es. Legge di Bilancio annuale) invece di duplicare la ricerca legislativa qui.
+`legal-consultant` indicizza l'intera legislazione italiana (corpus italia-corpus, ricerca
+full-text via server MCP) ed e' la fonte candidata per verificare il testo normativo aggiornato,
+per esempio quello della Legge di Bilancio annuale, invece di duplicare qui la ricerca
+legislativa. Il CV in `my-cv` linka questo repository come risorsa esterna, senza duplicarne il
+contenuto.
 
-Il CV in `E:\my-cv` linka questo repository come risorsa esterna, senza duplicarne il contenuto.
+## Avvertenza
+
+Questo strumento, quando sara' implementato, produrra' stime a scopo personale e informativo. Non
+sostituisce in alcun modo la consulenza di un commercialista o di un consulente del lavoro, e non
+va usato come base esclusiva per decisioni fiscali o contrattuali.
