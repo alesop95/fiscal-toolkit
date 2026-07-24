@@ -42,10 +42,13 @@ const moneyCentsSchema = z.number().int();
 const aliquotaSchema = z.number().min(0).max(1);
 
 /** Uno scaglione IRPEF: limite superiore (null per l'ultimo, illimitato) e aliquota. */
-const scaglioneSchema = z.object({
+export const scaglioneSchema = z.object({
   limiteSuperiore: moneyCentsSchema.nullable(),
   aliquota: aliquotaSchema,
 });
+
+/** Uno scaglione IRPEF validato. */
+export type Scaglione = z.infer<typeof scaglioneSchema>;
 
 /** Una fascia della detrazione da lavoro dipendente. Struttura affinata in Fase 1. */
 const fasciaDetrazioneSchema = z.object({
