@@ -89,4 +89,18 @@ export const params2025: ParamsAnno = {
       },
     },
   },
+  addizionali: {
+    // Addizionale regionale Marche: fonte da acquisire (pagina MEF regionale), non ancora inserita.
+    comunale: {
+      valore: {
+        aliquota: 0.0072,
+        sogliaEsenzione: 817_399,
+      },
+      fonte: {
+        urn: 'https://www1.finanze.gov.it/finanze2/dipartimentopolitichefiscali/fiscalitalocale/nuova_addcomirpef/',
+        articolo: 'Delibera C.C. Civitanova Marche n. 67 del 20-12-2024',
+        nota: 'Addizionale comunale IRPEF 2025: aliquota 0,72%, esenzione fino a 8.173,99 EUR (fonte MEF)',
+      },
+    },
+  },
 };

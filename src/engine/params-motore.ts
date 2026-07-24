@@ -67,16 +67,18 @@ export function toParametriMotore(p: ParamsAnno): ParametriMotore {
   };
 
   if (p.addizionali) {
-    motore.addizionali = {
-      regionale: p.addizionali.regionale.valore.scaglioni,
-      comunale: {
-        aliquota: p.addizionali.comunale.valore.aliquota,
-        sogliaEsenzione:
-          p.addizionali.comunale.valore.sogliaEsenzione === null
-            ? null
-            : m(p.addizionali.comunale.valore.sogliaEsenzione),
-      },
-    };
+    const addizionali: NonNullable<ParametriMotore['addizionali']> = {};
+    if (p.addizionali.regionale) {
+      addizionali.regionale = p.addizionali.regionale.valore.scaglioni;
+    }
+    if (p.addizionali.comunale) {
+      const c = p.addizionali.comunale.valore;
+      addizionali.comunale = {
+        aliquota: c.aliquota,
+        sogliaEsenzione: c.sogliaEsenzione === null ? null : m(c.sogliaEsenzione),
+      };
+    }
+    motore.addizionali = addizionali;
   }
 
   return motore;

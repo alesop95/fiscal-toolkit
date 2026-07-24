@@ -124,12 +124,13 @@ export const paramsAnnoSchema = z.object({
   previdenzaComplementare: z.object({
     tettoDeducibilita: cited(moneyCentsSchema),
   }),
-  // Addizionali locali: opzionali, perche' regione e comune non sono sempre disponibili e
-  // dipendono dalla residenza. Ogni blocco cita la propria fonte (legge regionale, delibera).
+  // Addizionali locali: opzionali, perche' dipendono dalla residenza e le due componenti possono
+  // arrivare in momenti diversi (la regionale e la comunale hanno fonti distinte). Ogni blocco
+  // cita la propria fonte (legge regionale, delibera comunale, dato MEF).
   addizionali: z
     .object({
-      regionale: cited(addizionaleRegionaleSchema),
-      comunale: cited(addizionaleComunaleSchema),
+      regionale: cited(addizionaleRegionaleSchema).optional(),
+      comunale: cited(addizionaleComunaleSchema).optional(),
     })
     .optional(),
 });

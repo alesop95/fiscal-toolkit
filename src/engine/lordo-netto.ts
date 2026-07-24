@@ -36,10 +36,13 @@ export interface ParametriMotore {
   detrazioneLavoroDipendente: DetrazioneLavoroDipendenteParams;
   cuneo: CuneoParams;
   inps: InpsParams;
-  /** Addizionali locali, opzionali: presenti solo se regione e comune sono noti per l'anno. */
+  /**
+   * Addizionali locali, opzionali e indipendenti: la regionale e la comunale hanno fonti diverse
+   * e possono essere disponibili una senza l'altra.
+   */
   addizionali?: {
-    regionale: readonly Scaglione[];
-    comunale: AddizionaleComunaleParams;
+    regionale?: readonly Scaglione[];
+    comunale?: AddizionaleComunaleParams;
   };
 }
 
@@ -89,11 +92,11 @@ export function calcolaLordoNetto(ral: Money, params: ParametriMotore): Risultat
   // Le detrazioni operano fino a concorrenza dell'imposta lorda (TUIR art. 11 co. 3).
   const irpefNetta = max(zero, subtract(subtract(irpef.lorda, detrazione.totale), cuneoDetrazione));
 
-  // Le addizionali si calcolano sull'imponibile IRPEF, se regione e comune sono noti per l'anno.
-  const addizionaleRegionale = params.addizionali
+  // Le addizionali si calcolano sull'imponibile IRPEF, ciascuna se disponibile per l'anno.
+  const addizionaleRegionale = params.addizionali?.regionale
     ? calcolaAddizionaleRegionale(imponibileIrpef, params.addizionali.regionale)
     : zero;
-  const addizionaleComunale = params.addizionali
+  const addizionaleComunale = params.addizionali?.comunale
     ? calcolaAddizionaleComunale(imponibileIrpef, params.addizionali.comunale)
     : zero;
   const addizionali = add(addizionaleRegionale, addizionaleComunale);

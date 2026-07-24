@@ -7,6 +7,10 @@
  * ne' alle misure della L. 207/2024. Restano quindi i valori strutturali del 2025, che qui
  * vengono riusati cambiando solo l'anno. Le fonti citate nei blocchi restano gli atti che fissano
  * i valori vigenti anche per il 2026.
+ *
+ * Addizionali: l'addizionale comunale di Civitanova Marche per il 2026 non risulta ancora
+ * pubblicata sulla fonte MEF; si eredita provvisoriamente l'aliquota 2025 (0,72%), da confermare
+ * quando la delibera 2026 sara' disponibile.
  */
 
 import { params2025 } from './2025.js';
