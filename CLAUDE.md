@@ -51,12 +51,12 @@ sistema completo e' in `.claude/PROJECT-SYSTEM.md`.
 
 ## Origine e materiale di riferimento
 
-Nato il 2026-07-10 da una sessione di ricerca svolta nel repository `my-cv`, dove restano
-tracciati i dettagli sensibili (cataloghi di file locali con materiale fiscale personale,
-`J:\CV (WORK)\Aspetti fiscali`) in `E:\my-cv\_notes\consulting-and-fiscal-tracking-2026-07-10.md`
-(non versionato, non pubblico). Quel file elenca il materiale di partenza gia' disponibile in
-locale, incluso un calcolo IRPEF reale con conguaglio di fine anno usabile come caso di test, da
-trascrivere come fixture numerica anonimizzata.
+Nato il 2026-07-10 da una sessione di ricerca svolta in un repository separato del CV personale,
+dove restano tracciati i dettagli sensibili (cataloghi di file locali con materiale fiscale
+personale) in una nota locale non versionata e non pubblica. Quella nota elenca il materiale di
+partenza gia' disponibile in locale, incluso un calcolo IRPEF reale con conguaglio di fine anno
+usabile come caso di test, da trascrivere come fixture numerica anonimizzata. I percorsi concreti
+di quel materiale, essendo personali, vivono in `CLAUDE.local.md` (ignorato da git), non qui.
 
 ## Progetti collegati
 
@@ -85,7 +85,10 @@ tool MCP `cerca_normativa` e `leggi_atto`. Il runtime resta comunque offline e d
 ## Vincoli di team
 
 Le operazioni di `git add`, commit e push restano sempre manuali dell'utente: l'agente prepara i
-file, non committa. L'identita' git e' quella personale: `alesop95` /
-`alessio.sopranzi.95@gmail.com` / alias SSH `github-personal`. Lo stile di documentazione e di
-interazione e' quello di `.claude/rules/interaction-style.md`. Claude non scrive autonomamente nei
-file di memoria e di contesto: li aggiorna solo su richiesta esplicita.
+file, non committa. L'identita' git e' quella personale dell'autore, agganciata all'alias SSH
+`github-personal`; i valori concreti di `user.name` e `user.email` vivono nella configurazione
+locale del repository e in `CLAUDE.local.md` (ignorato da git), non in questo file pubblico. La
+procedura di selezione dell'identita' e degli alias e' in `.claude/rules/git-identity-and-repo.md`.
+Lo stile di documentazione e di interazione e' quello di `.claude/rules/interaction-style.md`.
+Claude non scrive autonomamente nei file di memoria e di contesto: li aggiorna solo su richiesta
+esplicita.
