@@ -253,6 +253,56 @@ export function componiProspetto(anno: number, ral: Money): Prospetto {
   return { anno, ral: r.ral, voci, indicatori, risultato: r };
 }
 
+/** Un dettaglio serializzato, importo in euro. */
+export interface DettaglioSerializzato {
+  etichetta: string;
+  euro: number;
+  nota: string;
+}
+
+/** Una voce serializzata, importo in euro, pronta per JSON e UI. */
+export interface VoceSerializzata {
+  chiave: string;
+  etichetta: string;
+  categoria: CategoriaVoce;
+  euro: number;
+  disponibile: boolean;
+  spiegazione: string;
+  fonte: Fonte | null;
+  dettaglio: DettaglioSerializzato[];
+}
+
+/** Il prospetto serializzato, con importi in euro: contratto stabile per CLI --json e UI. */
+export interface ProspettoSerializzato {
+  anno: number;
+  ral: number;
+  voci: VoceSerializzata[];
+  indicatori: IndicatoriProspetto;
+}
+
+/** Converte un Prospetto in una struttura JSON-friendly con importi in euro. */
+export function serializzaProspetto(p: Prospetto): ProspettoSerializzato {
+  return {
+    anno: p.anno,
+    ral: toEuros(p.ral),
+    voci: p.voci.map((v) => ({
+      chiave: v.chiave,
+      etichetta: v.etichetta,
+      categoria: v.categoria,
+      euro: toEuros(v.importo),
+      disponibile: v.disponibile,
+      spiegazione: v.spiegazione,
+      fonte: v.fonte,
+      dettaglio: v.dettaglio.map((d) => ({
+        etichetta: d.etichetta,
+        euro: toEuros(d.importo),
+        nota: d.nota,
+      })),
+    })),
+    indicatori: p.indicatori,
+  };
+}
+
 function pct(frazione: number): string {
   return `${(frazione * 100).toLocaleString('it-IT', {
     minimumFractionDigits: 2,

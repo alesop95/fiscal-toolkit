@@ -19,11 +19,14 @@ export { calcolaLordoNetto } from './engine/lordo-netto.js';
 export type { RisultatoLordoNetto, ParametriMotore } from './engine/lordo-netto.js';
 export { toParametriMotore, calcolaLordoNettoAnno } from './engine/params-motore.js';
 
-export { componiProspetto } from './report/prospetto.js';
+export { componiProspetto, serializzaProspetto } from './report/prospetto.js';
 export type {
   Prospetto,
   VoceProspetto,
   DettaglioVoce,
   IndicatoriProspetto,
   CategoriaVoce,
+  ProspettoSerializzato,
+  VoceSerializzata,
+  DettaglioSerializzato,
 } from './report/prospetto.js';

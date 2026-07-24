@@ -14,7 +14,7 @@
 
 import { anniDisponibili, parametriAnno } from '../params/index.js';
 import { euros, format, toEuros } from './domain/money.js';
-import { type Prospetto, componiProspetto } from './report/prospetto.js';
+import { type Prospetto, componiProspetto, serializzaProspetto } from './report/prospetto.js';
 
 const VERSIONE = 'fiscal-toolkit 0.0.0 (Fase 1)';
 const MENSILITA = [12, 13, 14];
@@ -57,26 +57,7 @@ function percentuale(frazione: number): string {
 }
 
 function stampaJson(prospetto: Prospetto): void {
-  const out = {
-    anno: prospetto.anno,
-    ral: toEuros(prospetto.ral),
-    voci: prospetto.voci.map((v) => ({
-      chiave: v.chiave,
-      etichetta: v.etichetta,
-      categoria: v.categoria,
-      euro: toEuros(v.importo),
-      disponibile: v.disponibile,
-      spiegazione: v.spiegazione,
-      fonte: v.fonte,
-      dettaglio: v.dettaglio.map((d) => ({
-        etichetta: d.etichetta,
-        euro: toEuros(d.importo),
-        nota: d.nota,
-      })),
-    })),
-    indicatori: prospetto.indicatori,
-  };
-  console.log(JSON.stringify(out, null, 2));
+  console.log(JSON.stringify(serializzaProspetto(prospetto), null, 2));
 }
 
 function stampaProspetto(prospetto: Prospetto): void {

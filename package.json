@@ -22,6 +22,7 @@
   "files": ["dist"],
   "scripts": {
     "dev": "tsx src/cli.ts",
+    "ui": "tsx src/ui/main.ts",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
