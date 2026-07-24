@@ -49,8 +49,13 @@ citate; fixture golden `RAL -> netto` incluso il caso reale di conguaglio anonim
 `src/normative/legge-it.ts` piu' script `verify-params` che confronta i valori memorizzati col
 testo di legge in `legge.sqlite`.
 Definition of done: gli scenari golden passano entro la tolleranza di arrotondamento, i boundary
-degli scaglioni (27.999 / 28.000 / 50.000) sono corretti, `verify-params` stampa il testo del TUIR
-art. 11 coerente con 23/33/43 e soglie 28k/50k.
+degli scaglioni (27.999 / 28.000 / 50.000) sono corretti, `verify-params` riconcilia i valori
+memorizzati con il testo di legge vigente e stampa aliquote coerenti con 23/35/43 e soglie 28k/50k.
+Nota di correzione: il testo dell'art. 11 TUIR presente nel corpus mostra ancora 33 per cento sul
+secondo scaglione perche' non riflette la sostituzione operata dalla L. 207/2024 art. 1 co. 2; il
+valore vigente e verificato e' 35 per cento (D.Lgs. 216/2023 art. 1 per il 2024, L. 207/2024 dal
+2025), quindi `verify-params` deve leggere la legge modificatrice, non il solo chunk dell'art. 11.
+Vedi ADR-006.
 Dipendenze: Fase 0. Precede tecnicamente l'ingestione perche' la validazione dei documenti riusa
 il motore.
 

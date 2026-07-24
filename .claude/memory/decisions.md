@@ -75,3 +75,23 @@ Motivazione: mantenere il repo libero da vincoli di licenza incompatibili e le f
 verificabili e riproducibili.
 Conseguenze: ogni formula del motore cita il documento di knowledge base e l'URN del parametro; le
 fonti restano attribuite.
+
+## ADR-006 — Il testo consolidato di un articolo non e' la fonte finale del valore vigente
+
+Data: 2026-07-24
+Stato: accettata
+Contesto: durante la Fase 1 la verifica dell'aliquota IRPEF del secondo scaglione ha mostrato che
+il chunk dell'art. 11 TUIR indicizzato in `legge.sqlite` riporta ancora 33 per cento, mentre la
+L. 207/2024 art. 1 co. 2 lett. a) ha sostituito quel comma portandola a 35 per cento (35 per cento
+gia' effettivo nel 2024 tramite D.Lgs. 216/2023 art. 1). Il valore consolidato nel corpus era
+quindi disallineato rispetto alla legge modificatrice.
+Decisione: la fonte del valore normativo memorizzato in `params/AAAA.ts` e' la catena delle leggi
+modificatrici vigenti per l'anno d'imposta, non il solo testo consolidato dell'articolo base. Lo
+script `verify-params` confronta i valori con la legge modificatrice piu' recente applicabile e
+non si limita a leggere il chunk dell'articolo base; la citazione nel parametro punta all'atto che
+fissa il valore vigente.
+Motivazione: correttezza del calcolo e coerenza con ADR-003; un testo consolidato puo' non
+riflettere una novella recente e indurre un valore errato.
+Conseguenze: la Definition of Done della Fase 1 e' corretta da 23/33/43 a 23/35/43; ogni parametro
+soggetto a novella annuale (aliquote, detrazioni, cuneo) cita l'atto modificatore e non solo
+l'articolo del TUIR.
