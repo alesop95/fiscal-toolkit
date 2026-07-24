@@ -90,7 +90,21 @@ export const params2025: ParamsAnno = {
     },
   },
   addizionali: {
-    // Addizionale regionale Marche: fonte da acquisire (pagina MEF regionale), non ancora inserita.
+    regionale: {
+      valore: {
+        scaglioni: [
+          { limiteSuperiore: 1_500_000, aliquota: 0.0123 },
+          { limiteSuperiore: 2_800_000, aliquota: 0.0153 },
+          { limiteSuperiore: 5_000_000, aliquota: 0.017 },
+          { limiteSuperiore: null, aliquota: 0.0173 },
+        ],
+      },
+      fonte: {
+        urn: 'urn:nir:regione.marche:legge:2022-03-23;5',
+        articolo: 'art. 1 co. 1',
+        nota: 'Addizionale regionale Marche dall anno 2022 (1,23/1,53/1,70/1,73% su 15k/28k/50k). Aliquota agevolata 1,23% per redditi <=50k con figli disabili L.104: non modellata.',
+      },
+    },
     comunale: {
       valore: {
         aliquota: 0.0072,

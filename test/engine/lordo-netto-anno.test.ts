@@ -3,14 +3,14 @@ import { euros, toEuros } from '../../src/domain/money.js';
 import { calcolaLordoNettoAnno } from '../../src/engine/params-motore.js';
 
 describe('calcolaLordoNettoAnno con parametri reali', () => {
-  it('2025: include l addizionale comunale di Civitanova (0,72%) e non la regionale', () => {
+  it('2025: include addizionale regionale Marche e comunale Civitanova', () => {
     const r = calcolaLordoNettoAnno(2025, euros(30_000));
-    // Imponibile 27.243,00 > soglia esenzione 8.173,99 -> comunale = 27.243 * 0,72% = 196,15
+    // Imponibile 27.243,00. Regionale: 15.000*1,23% + 12.243*1,53% = 184,50 + 187,32 = 371,82
+    expect(toEuros(r.addizionaleRegionale)).toBeCloseTo(371.82, 2);
+    // Comunale: 27.243 > soglia 8.173,99 -> 27.243 * 0,72% = 196,15
     expect(toEuros(r.addizionaleComunale)).toBeCloseTo(196.15, 2);
-    // La regionale non e' ancora nei parametri
-    expect(r.addizionaleRegionale).toBe(0);
-    // Le addizionali totali coincidono con la sola comunale
-    expect(r.addizionali).toBe(r.addizionaleComunale);
+    // Totale addizionali = regionale + comunale
+    expect(toEuros(r.addizionali)).toBeCloseTo(567.97, 2);
   });
 
   it('sotto la soglia di esenzione comunale l addizionale non e dovuta', () => {
