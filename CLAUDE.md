@@ -66,10 +66,12 @@ corpus contiene gia' il TUIR (DPR 917/1986, scaglioni IRPEF nell'art. 11) e le L
 aggiornate. Poiche' `fiscal-toolkit` e' in Node e `legal-consultant` in Python, l'integrazione non
 importa il pacchetto Python: i numeri normativi restano in file di parametri locali versionati
 (`params/AAAA.ts`, ognuno con la propria citazione URN + articolo), e `legal-consultant` serve a
-verificarli e citarli in fase di manutenzione. Approccio previsto: aprire l'indice
-`E:\legal-consultant\data\index\legge.sqlite` in sola lettura da Node (`better-sqlite3`, che
-include FTS5), con path sovrascrivibile via `FISCAL_LEGGE_DB`; in alternativa restano usabili i
-tool MCP `cerca_normativa` e `leggi_atto`. Il runtime resta comunque offline e deterministico.
+verificarli e citarli in fase di manutenzione. Approccio adottato (vedi ADR-007): aprire l'indice
+`E:\legal-consultant\data\index\legge.sqlite` in sola lettura da Node con il modulo integrato
+`node:sqlite`, che include FTS5 e non richiede compilazione nativa (il binding `better-sqlite3`
+non compila su questa macchina senza toolchain C++), con path sovrascrivibile via
+`FISCAL_LEGGE_DB`; in alternativa restano usabili i tool MCP `cerca_normativa` e `leggi_atto`. Il
+runtime resta comunque offline e deterministico, e il modulo normativo e' solo di manutenzione.
 
 `E:\my-cv`: il CV personale linka questo repository come risorsa esterna.
 

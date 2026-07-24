@@ -95,3 +95,20 @@ riflettere una novella recente e indurre un valore errato.
 Conseguenze: la Definition of Done della Fase 1 e' corretta da 23/33/43 a 23/35/43; ogni parametro
 soggetto a novella annuale (aliquote, detrazioni, cuneo) cita l'atto modificatore e non solo
 l'articolo del TUIR.
+
+## ADR-007 — Accesso a legge.sqlite con node:sqlite, non better-sqlite3
+
+Data: 2026-07-24
+Stato: accettata (supera la scelta di better-sqlite3 indicata in STACK.md e CLAUDE.md)
+Contesto: il modulo normativo deve leggere l'indice `legge.sqlite` (FTS5) in sola lettura. La
+scelta iniziale era il binding nativo `better-sqlite3`, ma su questa macchina non esiste una
+toolchain C++ (nessuna installazione di Visual Studio) e non e' disponibile un prebuilt per Node
+22.23: l'installazione fallisce alla compilazione con node-gyp.
+Decisione: usare il modulo SQLite integrato in Node, `node:sqlite` (DatabaseSync), che include
+FTS5 e non richiede compilazione nativa ne' dipendenze aggiuntive. Il modulo resta isolato in
+`src/normative/legge-it.ts`, di sola manutenzione, e non entra nel bundle di runtime.
+Motivazione: elimina la dipendenza nativa e i suoi problemi di build, mantiene il runtime offline
+e senza dipendenze extra, e copre l'esigenza (lettura sola lettura piu' ricerca full-text BM25).
+Conseguenze: `node:sqlite` e' un modulo sperimentale e stampa un ExperimentalWarning; e' accettato
+per uno strumento di manutenzione. STACK.md e CLAUDE.md sono aggiornati per citare node:sqlite. Se
+in futuro servisse il modulo a runtime, si rivaluterebbe la scelta.

@@ -4,6 +4,25 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-24 — Fase 1: nucleo nazionale, CLI, modulo normativo e knowledge base
+
+Commit di riferimento: 6f653d1 (ultimo committato) piu' lavoro nuovo da committare.
+File toccati: aggiunti `src/engine/inps.ts` e `src/engine/lordo-netto.ts` (orchestratore) con test;
+riscritto `params/schema.ts` in forma strutturata allineata ai motori, creati `params/2025.ts`,
+`params/2026.ts`, `params/index.ts` e il ponte `src/engine/params-motore.ts`, rimosso
+`params/example.ts`; cablata la CLI `netto` in `src/cli.ts`; creato il modulo normativo isolato
+`src/normative/legge-it.ts` su `node:sqlite` e lo script `scripts/verify-params.ts`; creata la
+`knowledge-base/` (metodologie IRPEF, detrazioni, cuneo, INPS, previdenza; formati cedolino, CU,
+730, previdenza) e la cartella `tools/`; predisposta la cartella locale `documenti/` per
+l'ingestione, ignorata da git tranne il README.
+Motivo: completare il nucleo di calcolo lordo-netto eseguibile da CLI, con i parametri per anno
+citati e verificabili, e predisporre le cartelle di conoscenza e ingestione. Numeri verificati
+contro `E:\legal-consultant`; `verify-params` riconcilia scaglioni 23/35/43 (soglie 28k/50k),
+detrazione 1.955 EUR e tetto 5.164,57 EUR contro il testo di legge. Deciso in ADR-007 il passaggio
+da better-sqlite3 a `node:sqlite` (better-sqlite3 non compila su questa macchina senza toolchain
+C++). Restano da fare addizionali (Marche/Civitanova, fonte fuori dal corpus), anno 2024 (cuneo
+diverso) e i fixture golden col caso reale di conguaglio anonimizzato.
+
 ## 2026-07-24 — Fase 0 completata e avvio Fase 1 (motori verificati)
 
 Commit di riferimento: Fase 0 su d95d721 (scaffolding); il lavoro di Fase 1 qui descritto e'

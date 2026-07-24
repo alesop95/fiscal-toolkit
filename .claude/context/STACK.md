@@ -8,7 +8,7 @@ covers-paths:
   - src/**
   - params/**
   - knowledge-base/**
-last-verified-commit: 1368f95
+last-verified-commit: 6f653d1
 ---
 
 # Stack applicativo
@@ -46,4 +46,24 @@ raccoglie le metodologie offline citate.
 
 ## Riferimenti a snippet
 
-Ancora nessun simbolo: i puntatori `percorso:simbolo` si aggiungono man mano che il codice nasce.
+Dominio: `src/domain/money.ts` definisce il tipo `Money` (centesimi interi, branded) e le operazioni
+con arrotondamento fiscale (`euros`, `cents`, `applyRate`, `roundToWholeEuro`, `format`).
+
+Parametri: `params/schema.ts` (`paramsAnnoSchema`, `parseParams`, `cited`, tipo `Scaglione`),
+`params/2025.ts` e `params/2026.ts` (`params2025`, `params2026`), registro in `params/index.ts`
+(`parametriAnno`, `anniDisponibili`).
+
+Motore: `src/engine/irpef.ts` (`calcolaIrpefLorda`, `aliquotaMarginale`),
+`src/engine/detrazioni.ts` (`calcolaDetrazioneLavoroDipendente`), `src/engine/cuneo.ts`
+(`calcolaCuneo`), `src/engine/inps.ts` (`calcolaInpsDipendente`), orchestratore
+`src/engine/lordo-netto.ts` (`calcolaLordoNetto`, tipo `ParametriMotore`), ponte parametri-motore
+`src/engine/params-motore.ts` (`toParametriMotore`, `calcolaLordoNettoAnno`).
+
+Normativa (manutenzione): `src/normative/legge-it.ts` (`apriDb`, `leggiArticolo`, `cerca`) legge
+`legge.sqlite` con `node:sqlite` in sola lettura; lo script `scripts/verify-params.ts` riconcilia i
+parametri con la legge.
+
+CLI: `src/cli.ts` (comando `netto`). Barrel di libreria: `src/index.ts`.
+
+Cartelle di conoscenza e strumenti: `knowledge-base/` (metodologie citate e formati documento),
+`tools/` (strumenti locali), `documenti/` (ingestione locale, ignorata da git tranne il README).

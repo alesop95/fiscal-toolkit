@@ -22,8 +22,8 @@ i risultati sono deterministici e riproducibili. Importi monetari in centesimi i
 arrotondamento fiscale centralizzato, per evitare la deriva del floating point. Confini validati
 con lo stile parse-don't-validate (Zod) sui parametri e sul modello `FiscalDocument`. Dipendenze a
 senso unico: `domain` senza dipendenze, `engine` su `domain` piu' `params`, `ingestion` su `domain`
-piu' `engine`, `fotografia` sopra tutti. Il modulo `normative` che dipende da `better-sqlite3`
-resta isolato e non entra mai nel bundle di runtime.
+piu' `engine`, `fotografia` sopra tutti. Il modulo `normative`, che legge `legge.sqlite` con il
+modulo integrato `node:sqlite` (vedi ADR-007), resta isolato e non entra mai nel bundle di runtime.
 
 ## Sicurezza applicativa
 
