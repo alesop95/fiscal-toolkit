@@ -29,6 +29,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
+    "verify-params": "tsx scripts/verify-params.ts",
     "check": "npm run lint && npm run typecheck && npm run test"
   },
   "dependencies": {
