@@ -1,18 +1,40 @@
-# Note locali, non pubbliche
+# --- Livello privato e ignorato (sezione 6/10 del sistema di progetto) ---
+
+# Note locali, non pubbliche (livello privato e verboso)
 _notes/
 
-# Ambienti Python
+# Override personali e permessi personali
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Segreti e materiale di credenziale: mai committati. Il template pubblico e' .env.example,
+# tracciato; la copia compilata .env resta locale.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Estratti temporanei di documenti voluminosi (cartelle scratch e cache di doc-ingest)
+_notes/.tmp-doc-*/
+.tmp-doc-*/
+
+# Documenti Word grezzi (binari). I .pdf sorgente restano versionabili di default; i PDF
+# fiscali reali vivono comunque sotto _notes/ e sono gia' ignorati.
+*.docx
+
+# --- Ambienti e derivati ---
+
+# Node
+node_modules/
+dist/
+
+# Python (previsto solo per eventuali script accessori)
 .venv/
 __pycache__/
 *.pyc
-
-# Ambienti Node
-node_modules/
 
 # Editor / OS
 .vscode/
 .DS_Store
 Thumbs.db
-
-# Claude Code locale
-.claude/settings.local.json
