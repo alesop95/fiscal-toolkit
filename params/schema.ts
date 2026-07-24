@@ -99,6 +99,17 @@ const inpsSchema = z.object({
   primaFasciaAnnua: moneyCentsSchema,
 });
 
+/** Addizionale regionale: scaglioni applicati marginalmente come l'IRPEF. */
+const addizionaleRegionaleSchema = z.object({
+  scaglioni: z.array(scaglioneSchema).min(1),
+});
+
+/** Addizionale comunale: aliquota unica con eventuale soglia di esenzione. */
+const addizionaleComunaleSchema = z.object({
+  aliquota: aliquotaSchema,
+  sogliaEsenzione: moneyCentsSchema.nullable(),
+});
+
 /** Parametri normativi di un singolo anno d'imposta, ogni blocco citato alla sua fonte. */
 export const paramsAnnoSchema = z.object({
   anno: z.number().int().gte(2000).lte(2100),
@@ -113,6 +124,14 @@ export const paramsAnnoSchema = z.object({
   previdenzaComplementare: z.object({
     tettoDeducibilita: cited(moneyCentsSchema),
   }),
+  // Addizionali locali: opzionali, perche' regione e comune non sono sempre disponibili e
+  // dipendono dalla residenza. Ogni blocco cita la propria fonte (legge regionale, delibera).
+  addizionali: z
+    .object({
+      regionale: cited(addizionaleRegionaleSchema),
+      comunale: cited(addizionaleComunaleSchema),
+    })
+    .optional(),
 });
 
 /** Parametri normativi di un anno d'imposta, validati. */

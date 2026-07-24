@@ -26,7 +26,7 @@ export function toParametriMotore(p: ParamsAnno): ParametriMotore {
   const d = p.detrazioni.lavoroDipendente.valore;
   const c = p.cuneo.valore;
   const i = p.inps.valore;
-  return {
+  const motore: ParametriMotore = {
     scaglioniIrpef: p.irpef.scaglioni.valore,
     detrazioneLavoroDipendente: {
       soglia1: m(d.soglia1),
@@ -65,6 +65,21 @@ export function toParametriMotore(p: ParamsAnno): ParametriMotore {
       primaFasciaAnnua: m(i.primaFasciaAnnua),
     },
   };
+
+  if (p.addizionali) {
+    motore.addizionali = {
+      regionale: p.addizionali.regionale.valore.scaglioni,
+      comunale: {
+        aliquota: p.addizionali.comunale.valore.aliquota,
+        sogliaEsenzione:
+          p.addizionali.comunale.valore.sogliaEsenzione === null
+            ? null
+            : m(p.addizionali.comunale.valore.sogliaEsenzione),
+      },
+    };
+  }
+
+  return motore;
 }
 
 /**

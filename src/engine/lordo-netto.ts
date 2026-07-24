@@ -17,6 +17,11 @@
 
 import type { Scaglione } from '../../params/schema.js';
 import { type Money, add, max, subtract, zero } from '../domain/money.js';
+import {
+  type AddizionaleComunaleParams,
+  calcolaAddizionaleComunale,
+  calcolaAddizionaleRegionale,
+} from './addizionali.js';
 import { type CuneoParams, calcolaCuneo } from './cuneo.js';
 import {
   type DetrazioneLavoroDipendenteParams,
@@ -31,6 +36,11 @@ export interface ParametriMotore {
   detrazioneLavoroDipendente: DetrazioneLavoroDipendenteParams;
   cuneo: CuneoParams;
   inps: InpsParams;
+  /** Addizionali locali, opzionali: presenti solo se regione e comune sono noti per l'anno. */
+  addizionali?: {
+    regionale: readonly Scaglione[];
+    comunale: AddizionaleComunaleParams;
+  };
 }
 
 /** Esito completo del calcolo lordo-netto, voce per voce per la trasparenza della fotografia. */
@@ -46,7 +56,11 @@ export interface RisultatoLordoNetto {
   irpefNetta: Money;
   /** Parte del cuneo (co. 4) che non concorre al reddito e si aggiunge al netto. */
   cuneoSomma: Money;
-  /** Addizionali regionale e comunale: zero finche' le aliquote non sono disponibili. */
+  /** Addizionale regionale IRPEF. Zero se non disponibile per l'anno. */
+  addizionaleRegionale: Money;
+  /** Addizionale comunale IRPEF. Zero se non disponibile per l'anno. */
+  addizionaleComunale: Money;
+  /** Totale addizionali (regionale piu' comunale). */
   addizionali: Money;
   nettoAnnuo: Money;
   dettaglioIrpef: ScaglioneApplicato[];
@@ -75,7 +89,15 @@ export function calcolaLordoNetto(ral: Money, params: ParametriMotore): Risultat
   // Le detrazioni operano fino a concorrenza dell'imposta lorda (TUIR art. 11 co. 3).
   const irpefNetta = max(zero, subtract(subtract(irpef.lorda, detrazione.totale), cuneoDetrazione));
 
-  const addizionali = zero;
+  // Le addizionali si calcolano sull'imponibile IRPEF, se regione e comune sono noti per l'anno.
+  const addizionaleRegionale = params.addizionali
+    ? calcolaAddizionaleRegionale(imponibileIrpef, params.addizionali.regionale)
+    : zero;
+  const addizionaleComunale = params.addizionali
+    ? calcolaAddizionaleComunale(imponibileIrpef, params.addizionali.comunale)
+    : zero;
+  const addizionali = add(addizionaleRegionale, addizionaleComunale);
+
   const nettoAnnuo = add(
     subtract(subtract(subtract(ral, inps.totale), irpefNetta), addizionali),
     cuneoSomma,
@@ -90,6 +112,8 @@ export function calcolaLordoNetto(ral: Money, params: ParametriMotore): Risultat
     cuneoDetrazione,
     irpefNetta,
     cuneoSomma,
+    addizionaleRegionale,
+    addizionaleComunale,
     addizionali,
     nettoAnnuo,
     dettaglioIrpef: irpef.dettaglio,
