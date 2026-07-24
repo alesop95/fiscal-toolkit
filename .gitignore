@@ -3,6 +3,12 @@
 # Note locali, non pubbliche (livello privato e verboso)
 _notes/
 
+# Documenti fiscali reali da ingestionare (CU, cedolini, previdenza): contengono dati personali
+# e non entrano MAI nel version control. La cartella e' ignorata per intero, tranne il suo README
+# tracciato che ne spiega l'uso. Gli output derivati con cifre personali restano sotto _notes/.
+/documenti/*
+!/documenti/README.md
+
 # Override personali e permessi personali
 CLAUDE.local.md
 .claude/settings.local.json
