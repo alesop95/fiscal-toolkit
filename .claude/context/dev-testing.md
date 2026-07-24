@@ -24,7 +24,8 @@ fixture di ingestione con l'atteso `FiscalDocument`.
 
 Nessun servizio esterno a runtime, quindi niente mock di rete. Le fixture sono PDF o testo redatto
 sintetico piu' il JSON atteso. Il caso di test reale (calcolo IRPEF con conguaglio) e' esterno e
-privato in `E:\my-cv\_notes\` e va trascritto come fixture numerica anonimizzata.
+privato; il suo percorso concreto vive in `CLAUDE.local.md` (ignorato da git) e va trascritto come
+fixture numerica anonimizzata.
 
 ## Hook e controlli di qualita'
 
