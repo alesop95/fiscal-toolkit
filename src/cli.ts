@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 /**
- * CLI di fiscal-toolkit. Adattatore sottile sopra i moduli puri di src/: non contiene logica di
- * calcolo, legge gli argomenti, invoca il motore e stampa il risultato spiegato voce per voce.
- *
- * L'ambizione del comando netto e' essere leggibile come una dichiarazione: ogni riga porta
- * l'importo e, sotto, una spiegazione concisa di come si compone e da quale norma deriva.
+ * CLI di fiscal-toolkit. Adattatore sottile: legge gli argomenti, compone il Prospetto (modello
+ * esplicabile del calcolo) e lo rende leggibile. La logica di spiegazione vive nel Prospetto
+ * (src/report/prospetto.ts), non qui: la CLI e una futura UI renderizzano lo stesso modello.
  *
  * Comandi (Fase 1):
- *   fiscal netto <RAL> [--anno AAAA] [--json]   netto annuo spiegato da una RAL
+ *   fiscal netto <RAL> [--anno AAAA] [--json]   netto annuo spiegato voce per voce
  *   fiscal confronta <RAL>                       netto a confronto fra gli anni disponibili
  *   fiscal --version
  *
@@ -15,16 +13,15 @@
  */
 
 import { anniDisponibili, parametriAnno } from '../params/index.js';
-import { type Money, euros, format, toEuros } from './domain/money.js';
-import { aliquotaMarginale } from './engine/irpef.js';
-import type { RisultatoLordoNetto } from './engine/lordo-netto.js';
-import { calcolaLordoNettoAnno } from './engine/params-motore.js';
+import { euros, format, toEuros } from './domain/money.js';
+import { type Prospetto, componiProspetto } from './report/prospetto.js';
 
 const VERSIONE = 'fiscal-toolkit 0.0.0 (Fase 1)';
+const MENSILITA = [12, 13, 14];
 
 function stampaUso(): void {
   console.log('Uso:');
-  console.log('  fiscal netto <RAL> [--anno AAAA] [--json]   netto annuo spiegato da una RAL');
+  console.log('  fiscal netto <RAL> [--anno AAAA] [--json]   netto annuo spiegato voce per voce');
   console.log('  fiscal confronta <RAL>                       netto a confronto fra gli anni');
   console.log('  fiscal --version');
   console.log('');
@@ -59,30 +56,68 @@ function percentuale(frazione: number): string {
   })}%`;
 }
 
-/** Stampa una voce: etichetta e importo allineati, con una spiegazione indentata sotto. */
-function voce(etichetta: string, valore: Money, spiegazione: string): void {
-  console.log(`  ${etichetta.padEnd(26)} ${format(valore).padStart(14)}`);
-  if (spiegazione) {
-    console.log(`      ${spiegazione}`);
-  }
-}
-
-function stampaJson(anno: number, r: RisultatoLordoNetto): void {
+function stampaJson(prospetto: Prospetto): void {
   const out = {
-    anno,
-    ral: toEuros(r.ral),
-    contributiInps: toEuros(r.inps.totale),
-    imponibileIrpef: toEuros(r.imponibileIrpef),
-    irpefLorda: toEuros(r.irpefLorda),
-    detrazioneLavoro: toEuros(r.detrazioneLavoro),
-    cuneoDetrazione: toEuros(r.cuneoDetrazione),
-    cuneoSomma: toEuros(r.cuneoSomma),
-    irpefNetta: toEuros(r.irpefNetta),
-    addizionaleRegionale: toEuros(r.addizionaleRegionale),
-    addizionaleComunale: toEuros(r.addizionaleComunale),
-    nettoAnnuo: toEuros(r.nettoAnnuo),
+    anno: prospetto.anno,
+    ral: toEuros(prospetto.ral),
+    voci: prospetto.voci.map((v) => ({
+      chiave: v.chiave,
+      etichetta: v.etichetta,
+      categoria: v.categoria,
+      euro: toEuros(v.importo),
+      disponibile: v.disponibile,
+      spiegazione: v.spiegazione,
+      fonte: v.fonte,
+      dettaglio: v.dettaglio.map((d) => ({
+        etichetta: d.etichetta,
+        euro: toEuros(d.importo),
+        nota: d.nota,
+      })),
+    })),
+    indicatori: prospetto.indicatori,
   };
   console.log(JSON.stringify(out, null, 2));
+}
+
+function stampaProspetto(prospetto: Prospetto): void {
+  console.log(`Calcolo netto - anno d'imposta ${prospetto.anno}`);
+  console.log('');
+
+  for (const v of prospetto.voci) {
+    const importo = v.disponibile ? format(v.importo) : 'n.d.';
+    console.log(`  ${v.etichetta.padEnd(28)} ${importo.padStart(14)}`);
+    if (v.spiegazione) {
+      console.log(`      ${v.spiegazione}`);
+    }
+    for (const d of v.dettaglio) {
+      console.log(`        - ${d.etichetta} = ${format(d.importo)}  (${d.nota})`);
+    }
+  }
+
+  const netto = toEuros(prospetto.risultato.nettoAnnuo);
+  console.log('');
+  for (const mensilita of MENSILITA) {
+    const etichetta = `Netto mensile (su ${mensilita})`;
+    console.log(`  ${etichetta.padEnd(28)} ${format(euros(netto / mensilita)).padStart(14)}`);
+  }
+
+  console.log('');
+  console.log(
+    `  Aliquota marginale IRPEF: ${percentuale(prospetto.indicatori.aliquotaMarginaleIrpef)}`,
+  );
+  console.log(
+    `  Aliquota media imposte (su imponibile): ${percentuale(prospetto.indicatori.aliquotaMediaImposte)}`,
+  );
+  console.log(
+    `  Pressione fiscale (prelievo su RAL): ${percentuale(prospetto.indicatori.pressioneFiscale)}`,
+  );
+
+  console.log('');
+  const regionale = prospetto.voci.find((v) => v.chiave === 'addizionaleRegionale');
+  if (regionale && !regionale.disponibile) {
+    console.log('Nota: addizionale regionale non inclusa (aliquote da inserire).');
+  }
+  console.log('Non e consulenza fiscale: verificare con un commercialista.');
 }
 
 function comandoNetto(args: readonly string[]): number {
@@ -92,122 +127,17 @@ function comandoNetto(args: readonly string[]): number {
     return 1;
   }
   const anno = leggiAnno(args);
-  const p = parametriAnno(anno);
-  if (!p) {
+  if (!parametriAnno(anno)) {
     console.error(`Errore: anno ${anno} non disponibile. Anni: ${anniDisponibili.join(', ')}.`);
     return 1;
   }
 
-  const r = calcolaLordoNettoAnno(anno, euros(ral));
-
+  const prospetto = componiProspetto(anno, euros(ral));
   if (args.includes('--json')) {
-    stampaJson(anno, r);
-    return 0;
-  }
-
-  const inps = p.inps.valore;
-  const marginale = aliquotaMarginale(r.imponibileIrpef, p.irpef.scaglioni.valore);
-  const prelievo = toEuros(r.inps.totale) + toEuros(r.irpefNetta) + toEuros(r.addizionali);
-  const pressione = ral > 0 ? prelievo / ral : 0;
-
-  console.log(`Calcolo netto - anno d'imposta ${anno}`);
-  console.log('');
-
-  voce('Retribuzione annua lorda', r.ral, 'RAL: punto di partenza, la retribuzione lorda annuale.');
-  const dettaglioInps =
-    r.inps.aggiuntiva > 0
-      ? `${percentuale(inps.aliquotaBase)} sulla RAL piu' 1% sull'eccedenza della prima fascia`
-      : `${percentuale(inps.aliquotaBase)} sulla RAL (aliquota a carico del lavoratore)`;
-  voce('Contributi INPS', r.inps.totale, `${dettaglioInps}; sono deducibili dall'imponibile.`);
-  voce(
-    'Imponibile IRPEF',
-    r.imponibileIrpef,
-    'Reddito imponibile: RAL meno i contributi deducibili.',
-  );
-
-  console.log('');
-  console.log('  IRPEF lorda per scaglioni (fonte: L. 207/2024 art. 1, TUIR art. 11):');
-  for (const s of r.dettaglioIrpef) {
-    const soglia =
-      s.a === null ? 'oltre la soglia' : `fino a ${format(s.a, { withSymbol: false })}`;
-    console.log(
-      `      ${format(s.base).padStart(14)} al ${percentuale(s.aliquota)} = ${format(s.imposta)}  (${soglia})`,
-    );
-  }
-  voce('IRPEF lorda', r.irpefLorda, "Somma dell'imposta dei singoli scaglioni.");
-
-  voce(
-    'Detrazione lavoro dip.',
-    r.detrazioneLavoro,
-    'Detrazione da lavoro dipendente (TUIR art. 13), decrescente col reddito.',
-  );
-  if (toEuros(r.cuneoDetrazione) > 0) {
-    voce(
-      'Cuneo (detrazione)',
-      r.cuneoDetrazione,
-      'Ulteriore detrazione L. 207/2024 art. 1 co. 6 (reddito oltre 20.000).',
-    );
-  }
-  voce(
-    'IRPEF netta',
-    r.irpefNetta,
-    "IRPEF lorda meno detrazioni, fino a concorrenza dell'imposta.",
-  );
-
-  if (toEuros(r.cuneoSomma) > 0) {
-    voce(
-      'Cuneo (somma)',
-      r.cuneoSomma,
-      'Somma non tassata L. 207/2024 art. 1 co. 4 (reddito fino a 20.000): si aggiunge al netto.',
-    );
-  }
-
-  if (p.addizionali?.regionale) {
-    voce(
-      'Addizionale regionale',
-      r.addizionaleRegionale,
-      'Addizionale regionale IRPEF per scaglioni.',
-    );
+    stampaJson(prospetto);
   } else {
-    console.log(`  ${'Addizionale regionale'.padEnd(26)} ${'n.d.'.padStart(14)}`);
-    console.log('      Aliquote regionali non ancora inserite: da fonte ufficiale.');
+    stampaProspetto(prospetto);
   }
-  if (p.addizionali?.comunale) {
-    const c = p.addizionali.comunale;
-    voce(
-      'Addizionale comunale',
-      r.addizionaleComunale,
-      `${c.fonte.nota ?? 'Addizionale comunale IRPEF.'}`,
-    );
-  } else {
-    console.log(`  ${'Addizionale comunale'.padEnd(26)} ${'n.d.'.padStart(14)}`);
-    console.log('      Aliquota comunale non ancora inserita: da fonte ufficiale.');
-  }
-
-  console.log('');
-  voce(
-    'NETTO ANNUO',
-    r.nettoAnnuo,
-    "RAL meno INPS, IRPEF netta e addizionali, piu' il cuneo somma.",
-  );
-  console.log(
-    `  ${'Netto mensile (su 13)'.padEnd(26)} ${format(euros(toEuros(r.nettoAnnuo) / 13)).padStart(14)}`,
-  );
-  console.log(
-    `  ${'Netto mensile (su 12)'.padEnd(26)} ${format(euros(toEuros(r.nettoAnnuo) / 12)).padStart(14)}`,
-  );
-
-  console.log('');
-  console.log(`  Aliquota marginale IRPEF: ${percentuale(marginale)}`);
-  console.log(
-    `  Pressione fiscale effettiva (INPS + IRPEF netta + addizionali sulla RAL): ${percentuale(pressione)}`,
-  );
-
-  console.log('');
-  if (!p.addizionali?.regionale) {
-    console.log('Nota: addizionale regionale non inclusa (aliquote da inserire).');
-  }
-  console.log('Non e consulenza fiscale: verificare con un commercialista.');
   return 0;
 }
 
@@ -220,15 +150,13 @@ function comandoConfronta(args: readonly string[]): number {
   console.log(`Confronto netto per RAL ${format(euros(ral))}`);
   console.log('');
   console.log(
-    `  ${'Anno'.padEnd(6)} ${'Netto annuo'.padStart(14)} ${'Mensile (13)'.padStart(14)} ${'Pressione'.padStart(12)}`,
+    `  ${'Anno'.padEnd(6)} ${'Netto annuo'.padStart(14)} ${'Mensile (14)'.padStart(14)} ${'Pressione'.padStart(12)}`,
   );
   for (const anno of anniDisponibili) {
-    const r = calcolaLordoNettoAnno(anno, euros(ral));
-    const prelievo = toEuros(r.inps.totale) + toEuros(r.irpefNetta) + toEuros(r.addizionali);
-    const pressione = ral > 0 ? prelievo / ral : 0;
-    const mensile = euros(toEuros(r.nettoAnnuo) / 13);
+    const prospetto = componiProspetto(anno, euros(ral));
+    const mensile = euros(toEuros(prospetto.risultato.nettoAnnuo) / 14);
     console.log(
-      `  ${String(anno).padEnd(6)} ${format(r.nettoAnnuo).padStart(14)} ${format(mensile).padStart(14)} ${percentuale(pressione).padStart(12)}`,
+      `  ${String(anno).padEnd(6)} ${format(prospetto.risultato.nettoAnnuo).padStart(14)} ${format(mensile).padStart(14)} ${percentuale(prospetto.indicatori.pressioneFiscale).padStart(12)}`,
     );
   }
   console.log('');

@@ -18,3 +18,12 @@ export { calcolaInpsDipendente } from './engine/inps.js';
 export { calcolaLordoNetto } from './engine/lordo-netto.js';
 export type { RisultatoLordoNetto, ParametriMotore } from './engine/lordo-netto.js';
 export { toParametriMotore, calcolaLordoNettoAnno } from './engine/params-motore.js';
+
+export { componiProspetto } from './report/prospetto.js';
+export type {
+  Prospetto,
+  VoceProspetto,
+  DettaglioVoce,
+  IndicatoriProspetto,
+  CategoriaVoce,
+} from './report/prospetto.js';
