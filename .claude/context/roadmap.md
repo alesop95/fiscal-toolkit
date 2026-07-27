@@ -1,9 +1,9 @@
 ---
-generated-from-commit: 1368f95
+generated-from-commit: 1ad1282
 generated-from-branch: main
-generated-date: 2026-07-24
+generated-date: 2026-07-27
 covers-paths: []
-last-verified-commit: 1368f95
+last-verified-commit: 1ad1282
 ---
 
 # Roadmap
@@ -37,7 +37,12 @@ Definition of done: `npm install` e type-check verdi, `vitest` esegue almeno un 
 lo schema valida un file di parametri di esempio.
 Dipendenze: nessuna. Blocca tutte le fasi successive.
 
-### Fase 1 — Motore di calcolo piu' parametri normativi
+### Fase 1 — Motore di calcolo piu' parametri normativi (chiusa)
+
+Stato: chiusa e superata al 2026-07-27. Resta fuori il solo `params/2024.ts`, rimandato
+deliberatamente perche' il cuneo 2024 e' un esonero contributivo di struttura diversa. Oltre alla
+Definition of Done sono stati aggiunti il modello esplicabile `Prospetto`, una UI locale e la curva
+del prelievo al variare della RAL.
 
 Obiettivo: calcolo deterministico lordo/netto per un lavoratore dipendente, riproducibile e
 citato.
@@ -72,8 +77,10 @@ regola applicata); CLI `ingest` e `fotografia`; fixture CU/cedolino anonimizzate
 Definition of done: su fixture anonimizzate l'extractor produce il `FiscalDocument` atteso, un
 fixture con totale volutamente errato produce lo stato DA_VERIFICARE, la fotografia mostra la
 riconciliazione; nessun dato personale versionato (test guardia).
-Dipendenze: Fase 1. Serve sapere il provider del cedolino reale e la regione/comune per le
-addizionali.
+Dipendenze: Fase 1, soddisfatta. Blocco pratico attuale: la cartella locale `documenti/` e' vuota,
+e senza un cedolino e una CU reali gli extractor si scriverebbero alla cieca su fixture inventate.
+La regione e il comune per le addizionali sono gia' noti e modellati (Marche, Civitanova Marche);
+resta da rilevare il provider del cedolino reale, che si legge dal documento stesso.
 
 ### Fase 3 — Ottimizzazione previdenziale (finanza quantitativa)
 
@@ -98,8 +105,10 @@ solo come riscontro, mai come fonte da cui copiare.
 OCR per PDF scansionati: l'MVP assume PDF con text-layer; introdurre Tesseract solo se emergono
 documenti immagine.
 
-UI locale: il nucleo e' CLI-first e agnostico dalla UI, quindi una eventuale interfaccia (web o
-TUI) importerebbe gli stessi moduli senza riscrivere il motore.
+UI locale: non e' piu' un'ipotesi. Esiste in `src/ui/`, gira sul solo loopback senza dipendenze
+esterne e consuma gli stessi modelli della CLI, confermando che il nucleo CLI-first regge una
+interfaccia senza riscrivere il motore. Le estensioni possibili restano nell'ambito della
+presentazione, non del calcolo.
 
 ## Idee e ipotesi da verificare
 

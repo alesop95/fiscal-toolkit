@@ -19,14 +19,31 @@ export { calcolaLordoNetto } from './engine/lordo-netto.js';
 export type { RisultatoLordoNetto, ParametriMotore } from './engine/lordo-netto.js';
 export { toParametriMotore, calcolaLordoNettoAnno } from './engine/params-motore.js';
 
-export { componiProspetto, serializzaProspetto } from './report/prospetto.js';
+export { componiProspetto, serializzaProspetto, RATE_MENSILITA } from './report/prospetto.js';
 export type {
   Prospetto,
   VoceProspetto,
   DettaglioVoce,
   IndicatoriProspetto,
   CategoriaVoce,
+  ComposizioneRal,
+  SegmentoComposizione,
+  Mensilita,
   ProspettoSerializzato,
   VoceSerializzata,
   DettaglioSerializzato,
+  ComposizioneSerializzata,
+  SegmentoSerializzato,
 } from './report/prospetto.js';
+
+export { formattaFonte } from './report/fonte.js';
+export type { FonteLeggibile } from './report/fonte.js';
+
+export { componiCurva, serializzaCurva, CURVA_DEFAULT, MAX_PUNTI } from './report/curva.js';
+export type {
+  Curva,
+  PuntoCurva,
+  OpzioniCurva,
+  CurvaSerializzata,
+  PuntoSerializzato,
+} from './report/curva.js';

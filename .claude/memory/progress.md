@@ -4,6 +4,31 @@
 > significativo di codice e ogni intervento manuale rilevante lascia una voce con data, file
 > toccati, motivo e commit di riferimento.
 
+## 2026-07-27 — Consolidamento di UI e Prospetto, curva del prelievo
+
+Commit di riferimento: 1ad1282 (ultimo committato); il lavoro qui descritto e' da committare a mano.
+File toccati: creati `src/report/fonte.ts` (resa leggibile delle citazioni) e `src/report/curva.ts`
+(campionamento del prelievo al variare della RAL); esteso `src/report/prospetto.ts` con
+`ComposizioneRal`, `Mensilita` e `RATE_MENSILITA`, con la serializzazione relativa e con la fonte
+gia' leggibile nelle voci; `src/cli.ts` consuma le derivazioni, stampa le fonti sotto ogni voce,
+accetta `--json` anche su `confronta` e guadagna il comando `curva`; `src/ui/server.ts` espone
+`/api/curva` e valida gli ingressi (stringa vuota, tetto `RAL_MASSIMA`, tetto sui punti);
+`src/ui/page.ts` disegna la barra dai segmenti del modello, riconcilia la somma del cuneo, aggiunge
+la scheda della curva con grafico SVG inline, lo scarico JSON via Blob e il foglio di stampa;
+aggiornati `src/index.ts` e `src/ui/README.md`; nuovi test `test/report/composizione.test.ts`,
+`test/report/curva.test.ts`, `test/report/fonte.test.ts` ed estensione di `test/ui/server.test.ts`.
+Da 63 a 102 test verdi, lint e type-check puliti.
+Motivo: la UI e la CLI ricavavano per conto proprio grandezze che il Prospetto non esponeva, e la
+duplicazione aveva gia' prodotto un errore visibile (la barra a RAL 18.000 dichiarava 15.240,30
+contro i 16.024,90 della voce sottostante, esattamente la somma del cuneo). Vedi ADR-008. Durante il
+lavoro la curva ha fatto emergere due cose: un artefatto dell'indicatore di pressione fiscale,
+corretto in ADR-009, e una discontinuita' della norma modellata al passaggio di 15.000 EUR di
+reddito, dove la detrazione dell'art. 13 TUIR salta dai 1.955 EUR fissi della lett. a) ai circa
+3.100 EUR con cui riparte la lett. b). Quest'ultima non e' stata toccata: e' fedele ai parametri
+memorizzati e resta da verificare contro il testo di legge.
+Riscontro visivo: verificato su screenshot le tre schede della UI, la riconciliazione del cuneo, le
+citazioni leggibili e il grafico della curva.
+
 ## 2026-07-24 — Fase 1: nucleo nazionale, CLI, modulo normativo e knowledge base
 
 Commit di riferimento: 6f653d1 (ultimo committato) piu' lavoro nuovo da committare.

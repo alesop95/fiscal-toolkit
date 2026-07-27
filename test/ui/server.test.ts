@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { describe, expect, it } from 'vitest';
-import { gestisciRichiesta } from '../../src/ui/server.js';
+import { RAL_MASSIMA, gestisciRichiesta } from '../../src/ui/server.js';
 
 interface VoceJson {
   chiave: string;
@@ -71,6 +71,41 @@ describe('UI server handler', () => {
     expect(dati.ral).toBe(30000);
     expect(dati.prospetti.length).toBeGreaterThanOrEqual(2);
     expect(dati.prospetti[0]?.anno).toBe(2025);
+  });
+
+  it('/api/netto rifiuta il parametro ral assente invece di trattarlo come zero', () => {
+    // Number('') vale zero: senza il controllo sulla stringa vuota una query senza ral passerebbe.
+    const { res, stato } = fakeRes();
+    gestisciRichiesta(req('/api/netto?anno=2025'), res);
+    expect(stato.code).toBe(400);
+  });
+
+  it('/api/netto rifiuta una RAL oltre il tetto di ingresso', () => {
+    const { res, stato } = fakeRes();
+    gestisciRichiesta(req(`/api/netto?ral=${RAL_MASSIMA + 1}&anno=2025`), res);
+    expect(stato.code).toBe(400);
+  });
+
+  it('/api/curva restituisce i punti campionati', () => {
+    const { res, stato, corpo } = fakeRes();
+    gestisciRichiesta(req('/api/curva?anno=2025&da=20000&a=23000&passo=1000'), res);
+    expect(stato.code).toBe(200);
+    const dati = JSON.parse(corpo()) as { anno: number; punti: { ral: number }[] };
+    expect(dati.anno).toBe(2025);
+    expect(dati.punti.map((p) => p.ral)).toEqual([20_000, 21_000, 22_000, 23_000]);
+  });
+
+  it('/api/curva su un anno non disponibile risponde 400', () => {
+    const { res, stato } = fakeRes();
+    gestisciRichiesta(req('/api/curva?anno=2024'), res);
+    expect(stato.code).toBe(400);
+  });
+
+  it('/api/curva rifiuta un campionamento troppo fitto invece di calcolarlo', () => {
+    const { res, stato, corpo } = fakeRes();
+    gestisciRichiesta(req('/api/curva?anno=2025&da=0&a=60000&passo=100'), res);
+    expect(stato.code).toBe(400);
+    expect((JSON.parse(corpo()) as { errore?: string }).errore).toBeTruthy();
   });
 
   it('404 su percorso sconosciuto', () => {

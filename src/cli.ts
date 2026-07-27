@@ -6,23 +6,27 @@
  *
  * Comandi (Fase 1):
  *   fiscal netto <RAL> [--anno AAAA] [--json]   netto annuo spiegato voce per voce
- *   fiscal confronta <RAL>                       netto a confronto fra gli anni disponibili
+ *   fiscal confronta <RAL> [--json]              netto a confronto fra gli anni disponibili
+ *   fiscal curva [--anno AAAA] [--da N] [--a N] [--passo N] [--json]
  *   fiscal --version
  *
  * I comandi ingest e fotografia arrivano in Fase 2.
  */
 
 import { anniDisponibili, parametriAnno } from '../params/index.js';
-import { euros, format, toEuros } from './domain/money.js';
+import { type Money, euros, format, toEuros } from './domain/money.js';
+import { CURVA_DEFAULT, componiCurva, serializzaCurva } from './report/curva.js';
+import { formattaFonte } from './report/fonte.js';
 import { type Prospetto, componiProspetto, serializzaProspetto } from './report/prospetto.js';
 
 const VERSIONE = 'fiscal-toolkit 0.0.0 (Fase 1)';
-const MENSILITA = [12, 13, 14];
 
 function stampaUso(): void {
   console.log('Uso:');
   console.log('  fiscal netto <RAL> [--anno AAAA] [--json]   netto annuo spiegato voce per voce');
-  console.log('  fiscal confronta <RAL>                       netto a confronto fra gli anni');
+  console.log('  fiscal confronta <RAL> [--json]              netto a confronto fra gli anni');
+  console.log('  fiscal curva [--anno AAAA] [--da N] [--a N] [--passo N] [--json]');
+  console.log('                                               prelievo al variare della RAL');
   console.log('  fiscal --version');
   console.log('');
   console.log(`Anni disponibili: ${anniDisponibili.join(', ')}. RAL in euro.`);
@@ -60,6 +64,30 @@ function stampaJson(prospetto: Prospetto): void {
   console.log(JSON.stringify(serializzaProspetto(prospetto), null, 2));
 }
 
+/**
+ * Stampa la ripartizione della RAL e, quando il cuneo eroga una somma non tassata, la
+ * riconciliazione che porta dal netto ricavato dalla RAL al netto annuo effettivo. Senza questa
+ * riga i due numeri sembrerebbero contraddirsi.
+ */
+function stampaComposizione(prospetto: Prospetto): void {
+  const c = prospetto.composizione;
+  console.log('');
+  console.log(`  Composizione della RAL (${format(c.totale)})`);
+  for (const s of c.segmenti) {
+    const quota = `${(s.quota * 100).toLocaleString('it-IT', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    })}%`;
+    console.log(
+      `    ${s.etichetta.padEnd(24)} ${format(s.importo).padStart(14)} ${quota.padStart(7)}`,
+    );
+  }
+  if (c.cuneoSomma > 0) {
+    console.log(`    ${'+ Cuneo (somma)'.padEnd(24)} ${format(c.cuneoSomma).padStart(14)}`);
+    console.log(`    ${'= Netto annuo'.padEnd(24)} ${format(c.nettoAnnuo).padStart(14)}`);
+  }
+}
+
 function stampaProspetto(prospetto: Prospetto): void {
   console.log(`Calcolo netto - anno d'imposta ${prospetto.anno}`);
   console.log('');
@@ -73,13 +101,21 @@ function stampaProspetto(prospetto: Prospetto): void {
     for (const d of v.dettaglio) {
       console.log(`        - ${d.etichetta} = ${format(d.importo)}  (${d.nota})`);
     }
+    if (v.fonte) {
+      const f = formattaFonte(v.fonte);
+      console.log(`      Fonte: ${f.testo}`);
+      if (f.nota) {
+        console.log(`             ${f.nota}`);
+      }
+    }
   }
 
-  const netto = toEuros(prospetto.risultato.nettoAnnuo);
+  stampaComposizione(prospetto);
+
   console.log('');
-  for (const mensilita of MENSILITA) {
-    const etichetta = `Netto mensile (su ${mensilita})`;
-    console.log(`  ${etichetta.padEnd(28)} ${format(euros(netto / mensilita)).padStart(14)}`);
+  for (const m of prospetto.mensilita) {
+    const etichetta = `Netto mensile (su ${m.rate})`;
+    console.log(`  ${etichetta.padEnd(28)} ${format(m.importo).padStart(14)}`);
   }
 
   console.log('');
@@ -90,7 +126,7 @@ function stampaProspetto(prospetto: Prospetto): void {
     `  Aliquota media imposte (su imponibile): ${percentuale(prospetto.indicatori.aliquotaMediaImposte)}`,
   );
   console.log(
-    `  Pressione fiscale (prelievo su RAL): ${percentuale(prospetto.indicatori.pressioneFiscale)}`,
+    `  Pressione fiscale (divario RAL-netto): ${percentuale(prospetto.indicatori.pressioneFiscale)}`,
   );
 
   console.log('');
@@ -128,6 +164,15 @@ function comandoConfronta(args: readonly string[]): number {
     console.error('Errore: indicare la RAL in euro, es. "fiscal confronta 30000".');
     return 1;
   }
+
+  if (args.includes('--json')) {
+    const prospetti = anniDisponibili.map((a) =>
+      serializzaProspetto(componiProspetto(a, euros(ral))),
+    );
+    console.log(JSON.stringify({ ral, prospetti }, null, 2));
+    return 0;
+  }
+
   console.log(`Confronto netto per RAL ${format(euros(ral))}`);
   console.log('');
   console.log(
@@ -145,6 +190,64 @@ function comandoConfronta(args: readonly string[]): number {
   return 0;
 }
 
+/** Legge un'opzione numerica in euro, es. "--da 15000", ricadendo sul default se assente. */
+function leggiOpzioneEuro(args: readonly string[], nome: string, predefinito: Money): Money {
+  const i = args.indexOf(nome);
+  if (i < 0) {
+    return predefinito;
+  }
+  const valore = leggiEuro(args[i + 1]);
+  return valore === null ? predefinito : euros(valore);
+}
+
+function comandoCurva(args: readonly string[]): number {
+  const anno = leggiAnno(args);
+  if (!parametriAnno(anno)) {
+    console.error(`Errore: anno ${anno} non disponibile. Anni: ${anniDisponibili.join(', ')}.`);
+    return 1;
+  }
+
+  const opzioni = {
+    da: leggiOpzioneEuro(args, '--da', CURVA_DEFAULT.da),
+    a: leggiOpzioneEuro(args, '--a', CURVA_DEFAULT.a),
+    passo: leggiOpzioneEuro(args, '--passo', CURVA_DEFAULT.passo),
+  };
+
+  let curva: ReturnType<typeof componiCurva>;
+  try {
+    curva = componiCurva(anno, opzioni);
+  } catch (errore) {
+    console.error(`Errore: ${errore instanceof Error ? errore.message : String(errore)}`);
+    return 1;
+  }
+
+  if (args.includes('--json')) {
+    console.log(JSON.stringify(serializzaCurva(curva), null, 2));
+    return 0;
+  }
+
+  console.log(`Prelievo al variare della RAL - anno d'imposta ${anno}`);
+  console.log('');
+  console.log(
+    `  ${'RAL'.padStart(12)} ${'Netto annuo'.padStart(14)} ${'Mensile (14)'.padStart(14)} ${'Pressione'.padStart(11)} ${'Marg. IRPEF'.padStart(12)} ${'Marg. eff.'.padStart(11)}`,
+  );
+  for (const p of curva.punti) {
+    const mensile = euros(toEuros(p.nettoAnnuo) / 14);
+    console.log(
+      `  ${format(p.ral, { withSymbol: false }).padStart(12)} ${format(p.nettoAnnuo, { withSymbol: false }).padStart(14)} ${format(mensile, { withSymbol: false }).padStart(14)} ${percentuale(p.pressioneFiscale).padStart(11)} ${percentuale(p.aliquotaMarginaleIrpef).padStart(12)} ${percentuale(p.aliquotaMarginaleEffettiva).padStart(11)}`,
+    );
+  }
+  console.log('');
+  console.log(
+    `Marginale effettiva: quota trattenuta di ${format(curva.passo)} lordi in piu', contati contributi,`,
+  );
+  console.log(
+    "IRPEF, detrazioni, cuneo e addizionali. Non coincide con l'aliquota IRPEF di legge.",
+  );
+  console.log('Non e consulenza fiscale: verificare con un commercialista.');
+  return 0;
+}
+
 function main(): number {
   const args = process.argv.slice(2);
   const comando = args[0];
@@ -158,6 +261,9 @@ function main(): number {
   }
   if (comando === 'confronta') {
     return comandoConfronta(args.slice(1));
+  }
+  if (comando === 'curva') {
+    return comandoCurva(args.slice(1));
   }
   if (comando === undefined || comando === '--help' || comando === '-h') {
     stampaUso();

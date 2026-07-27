@@ -112,3 +112,44 @@ e senza dipendenze extra, e copre l'esigenza (lettura sola lettura piu' ricerca 
 Conseguenze: `node:sqlite` e' un modulo sperimentale e stampa un ExperimentalWarning; e' accettato
 per uno strumento di manutenzione. STACK.md e CLAUDE.md sono aggiornati per citare node:sqlite. Se
 in futuro servisse il modulo a runtime, si rivaluterebbe la scelta.
+
+## ADR-008 — Nessuna aritmetica nelle viste: le derivazioni vivono nel Prospetto
+
+Data: 2026-07-27
+Stato: accettata
+Contesto: la CLI e la pagina della UI ricavavano per conto proprio grandezze che il `Prospetto` non
+esponeva. La barra di composizione in `src/ui/page.ts` ricostruiva il netto come
+`ral - inps - irpefNetta - addizionali` e cosi' facendo ignorava la somma non tassata del cuneo
+(L. 207/2024 art. 1 co. 4): a RAL 18.000 la barra dichiarava 15.240,30 mentre la voce sottostante,
+nella stessa schermata, dichiarava 16.024,90. Le mensilita' su 12, 13 e 14 erano scritte a mano in
+entrambe le viste.
+Decisione: ogni grandezza mostrata da una vista e' calcolata nel livello `src/report/` e viaggia nel
+`Prospetto` serializzato. Le viste formattano e disegnano, non derivano. Rientrano nel modello la
+composizione della RAL con le sue quote, le mensilita' (`RATE_MENSILITA`) e la forma leggibile delle
+citazioni (`formattaFonte`), che la serializzazione applica prima di uscire.
+Motivazione: una derivazione duplicata in due viste diverge silenziosamente, ed era gia' divergente.
+Spostarla nel modello la rende testabile con invarianti (i segmenti sommano esattamente alla RAL,
+netto da RAL piu' somma del cuneo da' il netto annuo) invece che verificabile a occhio.
+Conseguenze: `ProspettoSerializzato` acquisisce `composizione` e `mensilita`, e il campo `fonte`
+delle voci serializzate cambia forma da `Fonte` grezza a `FonteLeggibile`. La somma del cuneo resta
+fuori dai segmenti della barra, perche' non e' una fetta della RAL ma un importo che si aggiunge
+sopra, e viene riconciliata esplicitamente sotto la barra.
+
+## ADR-009 — La pressione fiscale si misura sul divario lordo-netto, non sui prelievi
+
+Data: 2026-07-27
+Stato: accettata (corregge la definizione introdotta con il Prospetto)
+Contesto: l'indicatore `pressioneFiscale` era definito come somma dei prelievi (contributi, IRPEF
+netta, addizionali) rapportata alla RAL. La curva del prelievo al variare della RAL ha reso visibile
+l'artefatto: fra 22.000 e 23.000 euro di RAL l'indicatore scendeva da 19,90 a 16,44 per cento, cioe'
+la pressione calava al crescere del reddito. Il motivo e' che sotto la soglia il cuneo eroga la
+somma non tassata del co. 4, che arriva al lavoratore senza ridurre alcun prelievo e quindi resta
+invisibile a una misura costruita sui soli prelievi; sopra la soglia subentra l'ulteriore detrazione
+del co. 6, che invece riduce l'imposta e si vede.
+Decisione: `pressioneFiscale` e' il divario fra RAL e netto annuo rapportato alla RAL. Le due
+definizioni coincidono ovunque il cuneo non eroghi la somma.
+Motivazione: coerenza con il netto mostrato in ogni vista ed eliminazione di una non monotonia che
+non descrive la realta' del lavoratore ma solo la contabilizzazione della misura.
+Conseguenze: il numero cambia per le RAL fino a circa 22.000 euro. Le etichette di CLI e UI passano
+da "prelievo su RAL" a "divario RAL-netto". Un test sulla curva blinda la monotonia dell'indicatore
+oltre la discontinuita' della detrazione.

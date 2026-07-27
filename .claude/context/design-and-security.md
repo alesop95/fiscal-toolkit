@@ -1,18 +1,18 @@
 ---
-generated-from-commit: 1368f95
+generated-from-commit: 1ad1282
 generated-from-branch: main
-generated-date: 2026-07-24
+generated-date: 2026-07-27
 covers-paths:
   - src/**
   - test/fixtures/**
+  - test/guard/**
   - .gitignore
-last-verified-commit: 1368f95
+last-verified-commit: 1ad1282
 ---
 
 # Design e sicurezza applicativa
 
-> Al commit di riferimento non esiste ancora codice: questa scheda fissa i paradigmi decisi e i
-> vincoli di sicurezza dei dati, da verificare contro il codice dalla Fase 0 in poi.
+> Paradigmi in uso e vincoli sui dati sensibili, verificati contro il codice esistente.
 
 ## Paradigmi di software design
 
@@ -21,9 +21,25 @@ IO ne' lettura dell'orologio di sistema (l'anno d'imposta e' sempre passato come
 i risultati sono deterministici e riproducibili. Importi monetari in centesimi interi con
 arrotondamento fiscale centralizzato, per evitare la deriva del floating point. Confini validati
 con lo stile parse-don't-validate (Zod) sui parametri e sul modello `FiscalDocument`. Dipendenze a
-senso unico: `domain` senza dipendenze, `engine` su `domain` piu' `params`, `ingestion` su `domain`
-piu' `engine`, `fotografia` sopra tutti. Il modulo `normative`, che legge `legge.sqlite` con il
-modulo integrato `node:sqlite` (vedi ADR-007), resta isolato e non entra mai nel bundle di runtime.
+senso unico: `domain` senza dipendenze, `engine` su `domain` piu' `params`, `report` su `engine`,
+le viste (CLI e UI) su `report`, e per la Fase 2 `ingestion` su `domain` piu' `engine` con
+`fotografia` sopra tutti. Il modulo `normative`, che legge `legge.sqlite` con il modulo integrato
+`node:sqlite` (vedi ADR-007), resta isolato e non entra mai nel bundle di runtime.
+
+Le viste non derivano: ogni grandezza mostrata da CLI e UI e' calcolata nel livello `report` e
+viaggia nel modello serializzato, comprese le percentuali di una barra e la forma leggibile di una
+citazione. La regola nasce da un errore reale (vedi ADR-008) e vale anche per il JavaScript della
+pagina, che formatta e disegna senza fare aritmetica fiscale.
+
+## Superficie di rete
+
+Il runtime e' offline per costruzione. L'unico componente che apre una porta e' la UI locale, che
+usa il solo `node:http`, non ha dipendenze esterne, ascolta esclusivamente su `127.0.0.1` e non
+effettua alcuna richiesta in uscita; la pagina servita e' autonoma, con CSS e JavaScript inline e
+nessuna risorsa remota, e anche l'esportazione avviene in locale tramite `Blob`. Gli ingressi delle
+API sono validati con un tetto superiore sulla RAL e un tetto sul numero di punti campionabili,
+perche' un parametro malformato non deve poter far generare al server una quantita' arbitraria di
+lavoro.
 
 ## Sicurezza applicativa
 
