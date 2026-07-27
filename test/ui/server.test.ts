@@ -63,6 +63,16 @@ describe('UI server handler', () => {
     expect((JSON.parse(corpo()) as ProspettoJson).errore).toBeTruthy();
   });
 
+  it('/api/confronta restituisce un prospetto per ogni anno', () => {
+    const { res, stato, corpo } = fakeRes();
+    gestisciRichiesta(req('/api/confronta?ral=30000'), res);
+    expect(stato.code).toBe(200);
+    const dati = JSON.parse(corpo()) as { ral: number; prospetti: ProspettoJson[] };
+    expect(dati.ral).toBe(30000);
+    expect(dati.prospetti.length).toBeGreaterThanOrEqual(2);
+    expect(dati.prospetti[0]?.anno).toBe(2025);
+  });
+
   it('404 su percorso sconosciuto', () => {
     const { res, stato } = fakeRes();
     gestisciRichiesta(req('/ignoto'), res);

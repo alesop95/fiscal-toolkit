@@ -53,6 +53,19 @@ export function gestisciRichiesta(req: IncomingMessage, res: ServerResponse): vo
     return;
   }
 
+  if (url.pathname === '/api/confronta') {
+    const ral = Number(url.searchParams.get('ral'));
+    if (!Number.isFinite(ral) || ral < 0) {
+      inviaJson(res, 400, { errore: 'RAL non valida' });
+      return;
+    }
+    const prospetti = anniDisponibili.map((a) =>
+      serializzaProspetto(componiProspetto(a, euros(ral))),
+    );
+    inviaJson(res, 200, { ral, prospetti });
+    return;
+  }
+
   res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
   res.end('Not found');
 }
