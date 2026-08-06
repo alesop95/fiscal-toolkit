@@ -15,10 +15,7 @@ last-verified-commit: 1ad1282
 
 ## Livelli
 
-Strumento personale, non commerciale: non c'e' hosting ne' ambiente di produzione. Il tool gira in
-locale come libreria, come CLI e come UI locale. La UI non e' un servizio esposto: il server usa il
-solo modulo `node:http`, non ha dipendenze esterne, non fa alcun accesso di rete in uscita e ascolta
-esclusivamente sul loopback `127.0.0.1`.
+Strumento personale, non commerciale: non c'e' hosting ne' ambiente di produzione. Il tool gira in locale come libreria, come CLI e come UI locale. La UI non e' un servizio esposto: il server usa il solo modulo `node:http`, non ha dipendenze esterne, non fa alcun accesso di rete in uscita e ascolta esclusivamente sul loopback `127.0.0.1`.
 
 ## Comandi
 
@@ -46,8 +43,7 @@ Nessun comando di rilascio remoto.
 
 ## Variabili d'ambiente e segreti
 
-`FISCAL_LEGGE_DB`: path opzionale all'indice `legge.sqlite` di `legal-consultant` per la verifica
-dei parametri; default `E:\legal-consultant\data\index\legge.sqlite`.
+`FISCAL_LEGGE_DB`: path opzionale all'indice `legge.sqlite` di `legal-consultant` per la verifica dei parametri; default `E:\legal-consultant\data\index\legge.sqlite`.
 
 `FISCAL_UI_PORT`: porta della UI locale; default 4173.
 

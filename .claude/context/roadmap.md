@@ -8,111 +8,44 @@ last-verified-commit: 1ad1282
 
 # Roadmap
 
-> Direzione e priorita' del progetto. Tracciata. Non e' il work-log: qui sta dove si va, non cosa
-> e' gia' stato fatto. Lo stato reale delle fasi vive in `memory/index.md` e nel work-log.
+> Direzione e priorita' del progetto. Tracciata. Non e' il work-log: qui sta dove si va, non cosa e' gia' stato fatto. Lo stato reale delle fasi vive in `memory/index.md` e nel work-log.
 
 ## Direzione
 
-Costruire in Node/TypeScript un tool che gestisca la fiscalita' di un lavoratore dipendente
-italiano: ingestione dei documenti reali (Certificazione Unica, cedolini, previdenza
-complementare), fotografia fiscale riconciliata con un motore di calcolo deterministico, e in
-prospettiva stima quantitativa di come ottimizzare i versamenti al fondo pensione nel lungo
-periodo. I parametri normativi restano locali e versionati per anno d'imposta, verificati contro
-`legal-consultant`; le metodologie esterne (stipendio.top, calcolatori community, i contenuti di
-Paolo Coletti) si ricodificano offline in `knowledge-base/`, con citazioni, senza copiare codice.
+Costruire in Node/TypeScript un tool che gestisca la fiscalita' di un lavoratore dipendente italiano: ingestione dei documenti reali (Certificazione Unica, cedolini, previdenza complementare), fotografia fiscale riconciliata con un motore di calcolo deterministico, e in prospettiva stima quantitativa di come ottimizzare i versamenti al fondo pensione nel lungo periodo. I parametri normativi restano locali e versionati per anno d'imposta, verificati contro `legal-consultant`; le metodologie esterne (stipendio.top, calcolatori community, i contenuti di Paolo Coletti) si ricodificano offline in `knowledge-base/`, con citazioni, senza copiare codice.
 
 ## Fasi
 
-Le fasi sono sequenziali: ognuna dipende dalla precedente. Ogni fase e' un'unita' di lavoro a se',
-committata a mano dall'utente prima di passare alla successiva.
+Le fasi sono sequenziali: ognuna dipende dalla precedente. Ogni fase e' un'unita' di lavoro a se', committata a mano dall'utente prima di passare alla successiva.
 
 ### Fase 0 — Scaffolding
 
-Obiettivo: fondamenta di build, test e tipi base, senza logica di funzionalita'.
-Deliverable: `package.json` (ESM, `bin` CLI + `exports` libreria), `tsconfig.json` strict con
-`tsconfig.build.json` per l'emit, `vitest.config.ts`, `tsup.config.ts`, lint (eslint o biome),
-`params/schema.ts` (schema Zod dei parametri e wrapper `Cited<T>`), `src/domain/money.ts` (importi
-in centesimi e arrotondamento fiscale).
-Definition of done: `npm install` e type-check verdi, `vitest` esegue almeno un test di `money.ts`,
-lo schema valida un file di parametri di esempio.
-Dipendenze: nessuna. Blocca tutte le fasi successive.
+Obiettivo: fondamenta di build, test e tipi base, senza logica di funzionalita'. Deliverable: `package.json` (ESM, `bin` CLI + `exports` libreria), `tsconfig.json` strict con `tsconfig.build.json` per l'emit, `vitest.config.ts`, `tsup.config.ts`, lint (eslint o biome), `params/schema.ts` (schema Zod dei parametri e wrapper `Cited<T>`), `src/domain/money.ts` (importi in centesimi e arrotondamento fiscale). Definition of done: `npm install` e type-check verdi, `vitest` esegue almeno un test di `money.ts`, lo schema valida un file di parametri di esempio. Dipendenze: nessuna. Blocca tutte le fasi successive.
 
 ### Fase 1 — Motore di calcolo piu' parametri normativi (chiusa)
 
-Stato: chiusa e superata al 2026-07-27. Resta fuori il solo `params/2024.ts`, rimandato
-deliberatamente perche' il cuneo 2024 e' un esonero contributivo di struttura diversa. Oltre alla
-Definition of Done sono stati aggiunti il modello esplicabile `Prospetto`, una UI locale e la curva
-del prelievo al variare della RAL.
+Stato: chiusa e superata al 2026-07-27. Resta fuori il solo `params/2024.ts`, rimandato deliberatamente perche' il cuneo 2024 e' un esonero contributivo di struttura diversa. Oltre alla Definition of Done sono stati aggiunti il modello esplicabile `Prospetto`, una UI locale e la curva del prelievo al variare della RAL.
 
-Obiettivo: calcolo deterministico lordo/netto per un lavoratore dipendente, riproducibile e
-citato.
-Deliverable: `params/2026.ts` (piu' 2025 e 2024) con scaglioni IRPEF, aliquota INPS dipendente,
-formula detrazioni lavoro dipendente, tetto deducibilita' previdenza complementare (5.164,57 EUR),
-parametri cuneo, ognuno con citazione URN + articolo; `src/engine/` (irpef, detrazioni,
-addizionali, inps, cuneo, orchestratore `lordo-netto`); `knowledge-base/` con le metodologie
-citate; fixture golden `RAL -> netto` incluso il caso reale di conguaglio anonimizzato; CLI `netto`;
-`src/normative/legge-it.ts` piu' script `verify-params` che confronta i valori memorizzati col
-testo di legge in `legge.sqlite`.
-Definition of done: gli scenari golden passano entro la tolleranza di arrotondamento, i boundary
-degli scaglioni (27.999 / 28.000 / 50.000) sono corretti, `verify-params` riconcilia i valori
-memorizzati con il testo di legge vigente e stampa aliquote coerenti con 23/35/43 e soglie 28k/50k.
-Nota di correzione: il testo dell'art. 11 TUIR presente nel corpus mostra ancora 33 per cento sul
-secondo scaglione perche' non riflette la sostituzione operata dalla L. 207/2024 art. 1 co. 2; il
-valore vigente e verificato e' 35 per cento (D.Lgs. 216/2023 art. 1 per il 2024, L. 207/2024 dal
-2025), quindi `verify-params` deve leggere la legge modificatrice, non il solo chunk dell'art. 11.
-Vedi ADR-006.
-Dipendenze: Fase 0. Precede tecnicamente l'ingestione perche' la validazione dei documenti riusa
-il motore.
+Obiettivo: calcolo deterministico lordo/netto per un lavoratore dipendente, riproducibile e citato. Deliverable: `params/2026.ts` (piu' 2025 e 2024) con scaglioni IRPEF, aliquota INPS dipendente, formula detrazioni lavoro dipendente, tetto deducibilita' previdenza complementare (5.164,57 EUR), parametri cuneo, ognuno con citazione URN + articolo; `src/engine/` (irpef, detrazioni, addizionali, inps, cuneo, orchestratore `lordo-netto`); `knowledge-base/` con le metodologie citate; fixture golden `RAL -> netto` incluso il caso reale di conguaglio anonimizzato; CLI `netto`; `src/normative/legge-it.ts` piu' script `verify-params` che confronta i valori memorizzati col testo di legge in `legge.sqlite`. Definition of done: gli scenari golden passano entro la tolleranza di arrotondamento, i boundary degli scaglioni (27.999 / 28.000 / 50.000) sono corretti, `verify-params` riconcilia i valori memorizzati con il testo di legge vigente e stampa aliquote coerenti con 23/35/43 e soglie 28k/50k. Nota di correzione: il testo dell'art. 11 TUIR presente nel corpus mostra ancora 33 per cento sul secondo scaglione perche' non riflette la sostituzione operata dalla L. 207/2024 art. 1 co. 2; il valore vigente e verificato e' 35 per cento (D.Lgs. 216/2023 art. 1 per il 2024, L. 207/2024 dal 2025), quindi `verify-params` deve leggere la legge modificatrice, non il solo chunk dell'art. 11. Vedi ADR-006. Dipendenze: Fase 0. Precede tecnicamente l'ingestione perche' la validazione dei documenti riusa il motore.
 
 ### Fase 2 — Ingestione documenti piu' fotografia fiscale (MVP)
 
-Obiettivo: dai PDF reali a una fotografia fiscale precisa e riconciliata. E' l'obiettivo dichiarato
-dell'MVP.
-Deliverable: `src/ingestion/pdf/` (estrazione testo e token posizionati con pdfjs-dist, fallback
-pdf-parse); extractor nell'ordine CU, poi cedolino con registry di strategie per-provider, poi
-previdenza; `src/ingestion/validate.ts` (quadratura interna piu' ricalcolo col motore di Fase 1 e
-confronto con banda di tolleranza); `src/fotografia/compose.ts` (fotografia con riconciliazione a
-tre colonne daDocumento / ricalcolato / delta e stato OK o DA_VERIFICARE, piu' citazione della
-regola applicata); CLI `ingest` e `fotografia`; fixture CU/cedolino anonimizzate.
-Definition of done: su fixture anonimizzate l'extractor produce il `FiscalDocument` atteso, un
-fixture con totale volutamente errato produce lo stato DA_VERIFICARE, la fotografia mostra la
-riconciliazione; nessun dato personale versionato (test guardia).
-Dipendenze: Fase 1, soddisfatta. Blocco pratico attuale: la cartella locale `documenti/` e' vuota,
-e senza un cedolino e una CU reali gli extractor si scriverebbero alla cieca su fixture inventate.
-La regione e il comune per le addizionali sono gia' noti e modellati (Marche, Civitanova Marche);
-resta da rilevare il provider del cedolino reale, che si legge dal documento stesso.
+Obiettivo: dai PDF reali a una fotografia fiscale precisa e riconciliata. E' l'obiettivo dichiarato dell'MVP. Deliverable: `src/ingestion/pdf/` (estrazione testo e token posizionati con pdfjs-dist, fallback pdf-parse); extractor nell'ordine CU, poi cedolino con registry di strategie per-provider, poi previdenza; `src/ingestion/validate.ts` (quadratura interna piu' ricalcolo col motore di Fase 1 e confronto con banda di tolleranza); `src/fotografia/compose.ts` (fotografia con riconciliazione a tre colonne daDocumento / ricalcolato / delta e stato OK o DA_VERIFICARE, piu' citazione della regola applicata); CLI `ingest` e `fotografia`; fixture CU/cedolino anonimizzate. Definition of done: su fixture anonimizzate l'extractor produce il `FiscalDocument` atteso, un fixture con totale volutamente errato produce lo stato DA_VERIFICARE, la fotografia mostra la riconciliazione; nessun dato personale versionato (test guardia). Dipendenze: Fase 1, soddisfatta. Blocco pratico attuale: la cartella locale `documenti/` e' vuota, e senza un cedolino e una CU reali gli extractor si scriverebbero alla cieca su fixture inventate. La regione e il comune per le addizionali sono gia' noti e modellati (Marche, Civitanova Marche); resta da rilevare il provider del cedolino reale, che si legge dal documento stesso.
 
 ### Fase 3 — Ottimizzazione previdenziale (finanza quantitativa)
 
-Obiettivo: stimare quanto conviene versare al fondo pensione per il massimo rendimento netto di
-lungo periodo.
-Deliverable: `src/optimizer/` che consuma la `FotografiaFiscale` (reddito complessivo, aliquota
-marginale, contributi al fondo, flusso TFR) piu' i parametri (tetto deducibilita', scaglioni);
-proiezione deterministica pluriennale che confronta versamento al fondo con beneficio di deduzione
-immediata piu' rendimento e tassazione finale agevolata, contro TFR in azienda, contro un ETF/PAC
-equivalente al netto delle imposte; `knowledge-base/previdenza-complementare.md` con la metodologia
-citata, ispirata ai contenuti di Paolo Coletti.
-Definition of done: date le stesse ipotesi, le proiezioni sono riproducibili e la raccomandazione
-di versamento e' spiegata voce per voce; nessun accesso di rete a runtime.
-Dipendenze: Fase 2 (la fotografia e' il contratto di input).
+Obiettivo: stimare quanto conviene versare al fondo pensione per il massimo rendimento netto di lungo periodo. Deliverable: `src/optimizer/` che consuma la `FotografiaFiscale` (reddito complessivo, aliquota marginale, contributi al fondo, flusso TFR) piu' i parametri (tetto deducibilita', scaglioni); proiezione deterministica pluriennale che confronta versamento al fondo con beneficio di deduzione immediata piu' rendimento e tassazione finale agevolata, contro TFR in azienda, contro un ETF/PAC equivalente al netto delle imposte; `knowledge-base/previdenza-complementare.md` con la metodologia citata, ispirata ai contenuti di Paolo Coletti. Definition of done: date le stesse ipotesi, le proiezioni sono riproducibili e la raccomandazione di versamento e' spiegata voce per voce; nessun accesso di rete a runtime. Dipendenze: Fase 2 (la fotografia e' il contratto di input).
 
 ## Estensioni future (fuori dall'MVP, da confermare)
 
-Confronto dipendente vs partita IVA (regime forfettario e ordinario): gia' nello scopo originale
-del progetto; le formule vanno derivate a mano e verificate contro calcolatori proprietari usati
-solo come riscontro, mai come fonte da cui copiare.
+Confronto dipendente vs partita IVA (regime forfettario e ordinario): gia' nello scopo originale del progetto; le formule vanno derivate a mano e verificate contro calcolatori proprietari usati solo come riscontro, mai come fonte da cui copiare.
 
-OCR per PDF scansionati: l'MVP assume PDF con text-layer; introdurre Tesseract solo se emergono
-documenti immagine.
+OCR per PDF scansionati: l'MVP assume PDF con text-layer; introdurre Tesseract solo se emergono documenti immagine.
 
-UI locale: non e' piu' un'ipotesi. Esiste in `src/ui/`, gira sul solo loopback senza dipendenze
-esterne e consuma gli stessi modelli della CLI, confermando che il nucleo CLI-first regge una
-interfaccia senza riscrivere il motore. Le estensioni possibili restano nell'ambito della
-presentazione, non del calcolo.
+UI locale: non e' piu' un'ipotesi. Esiste in `src/ui/`, gira sul solo loopback senza dipendenze esterne e consuma gli stessi modelli della CLI, confermando che il nucleo CLI-first regge una interfaccia senza riscrivere il motore. Le estensioni possibili restano nell'ambito della presentazione, non del calcolo.
 
 ## Idee e ipotesi da verificare
 
 Licenza del repo da fissare (non-GPL, con reimplementazione clean-room di stipendio.top).
 
-Stabilita' dei codici di campo della CU tra anni diversi: la CU dell'Agenzia delle Entrate e'
-stabile ma la numerazione puo' cambiare, quindi le regole dell'extractor vanno versionate per anno.
+Stabilita' dei codici di campo della CU tra anni diversi: la CU dell'Agenzia delle Entrate e' stabile ma la numerazione puo' cambiare, quindi le regole dell'extractor vanno versionate per anno.
