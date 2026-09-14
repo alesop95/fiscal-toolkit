@@ -44,6 +44,15 @@ function euroDec(centesimi: number): string {
   });
 }
 
+/**
+ * Formatta un importo come lo scrive il testo di legge: con i decimali se ne ha (5.164,57), in
+ * forma intera se l'importo e' tondo (5.300). Serve perche' la stessa grandezza puo' comparire
+ * nelle due forme in due atti diversi, e un confronto testuale rigido mancherebbe una delle due.
+ */
+function euroTesto(centesimi: number): string {
+  return centesimi % 100 === 0 ? euroInt(centesimi) : euroDec(centesimi);
+}
+
 function testoFonte(righe: Norma[]): string {
   return righe.map((r) => r.testo).join('\n');
 }
@@ -105,7 +114,7 @@ function verifica(nome: string, fonteUrn: string, fonteArt: string, attesi: stri
 // Tetto previdenza complementare.
 {
   const b = p.previdenzaComplementare.tettoDeducibilita;
-  verifica('Tetto previdenza', b.fonte.urn, b.fonte.articolo, [euroDec(b.valore)]);
+  verifica('Tetto previdenza', b.fonte.urn, b.fonte.articolo, [euroTesto(b.valore)]);
 }
 
 // INPS: valori amministrativi, non presenti come cifra nel corpus statale.

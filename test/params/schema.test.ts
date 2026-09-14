@@ -16,6 +16,10 @@ describe('params schema', () => {
     expect(p2026.anno).toBe(2026);
     // Il 2026 riusa i valori strutturali del 2025 (Bilancio 2026 non li modifica)
     expect(p2026.irpef.scaglioni.valore).toEqual(p2025.irpef.scaglioni.valore);
+    // Eccezione: il tetto di deducibilita' della previdenza sale a 5.300 EUR dal 2026
+    // (L. 199/2025 art. 1 co. 201 lett. a) n. 1, che novella il D.Lgs. 252/2005 art. 8 co. 4)
+    expect(p2026.previdenzaComplementare.tettoDeducibilita.valore).toBe(530_000);
+    expect(p2026.previdenzaComplementare.tettoDeducibilita.fonte.urn).toContain('2025-12-30;199');
   });
 
   it('ogni blocco normativo porta una fonte con urn e articolo', () => {
